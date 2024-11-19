@@ -1,0 +1,27 @@
+# these are ignored.
+./csv_files/
+./ez_timestep/
+./hx_timestep/
+./hy_timestep/
+./build/
+./pngs/
+./mp4/
+
+*.yaml
+*.cmake
+*.log
+*.ninja
+*.png
+*.mp4
+*.txt
+*.json
+*.csv
+*.d
+*.o
+*.a
+*.so
+.ninja_deps
+.ninja_log
+main
+
+!CMakeLists.txt
