@@ -44,22 +44,13 @@ class vec2d {
          if(this!=&obj){
             this->vec=obj.vec;
          }
-         // vec.clear();
-         // vec.resize(obj.vec.size(),std::vector<double>(obj.vec[0].size()));
-
-         // for(size_t j=0; j<obj.vec.size(); j++) {
-         //    for(size_t i=0; i<obj.vec[0].size(); i++){
-         //       vec[j][i]=obj.vec[j][i];
-         //    }
-         // }
-
       }
 
       // 代入演算子A=B
-      virtual vec2d operator=(const vec2d& obj);
+      virtual vec2d& operator=(const vec2d& obj);
 
       // vectorの代入A=vector
-      virtual vec2d operator=(const std::vector<std::vector<double>> obj);
+      virtual vec2d& operator=(const std::vector<std::vector<double>> obj);
 
       // 値の代入A=d
      virtual vec2d operator=(const double d);
@@ -176,7 +167,7 @@ void vec2d::show(const int precision) const {
 }
 
 // 代入演算子 A = B
-vec2d vec2d::operator=(const vec2d& obj) {
+vec2d& vec2d::operator=(const vec2d& obj) {
 
    if (this != &obj) {
       this->vec=obj.vec;
@@ -186,7 +177,7 @@ vec2d vec2d::operator=(const vec2d& obj) {
 }
 
 // vectorの代入 (A=vector) (実体を渡す)
-vec2d vec2d::operator=(const std::vector<std::vector<double>> obj) {
+vec2d& vec2d::operator=(const std::vector<std::vector<double>> obj) {
 
    this->vec.resize(obj.size(),std::vector<double>(obj[0].size()));
 
