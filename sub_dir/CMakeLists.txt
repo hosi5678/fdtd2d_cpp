@@ -7,6 +7,9 @@ set(CMAKE_CXX_COMPILER "/usr/bin/g++-11")
 # project名の設定
 project(cpp_lib)
 
+#debugの設定
+set(CMAKE_BUILD_TYPE "Debug")
+
 # file名 .cppを収集する
 file(GLOB_RECURSE SOURCES "./src/*.cpp")
 

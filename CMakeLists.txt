@@ -7,6 +7,9 @@ set(CMAKE_CXX_COMPILER "/usr/bin/g++-11")
 #プロジェクトの指定と言語の指定
 project(my_cpp_prac)
 
+#debugの設定
+set(CMAKE_BUILD_TYPE "Debug")
+
 # targetの名前の設定
 add_executable(main main.cpp)
 

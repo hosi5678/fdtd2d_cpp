@@ -30,7 +30,7 @@ class base2d : public base1d {
    public :
       base2d() :base1d(), y(0.0) {}
 
-      base2d(double _x, double _y) : base1d(_x), y(_y) {} 
+      base2d(double _x, double _y) : base1d(_x), y(_y) {}
 
       void calc(){
          cout << "x+y=" << x+y << endl;

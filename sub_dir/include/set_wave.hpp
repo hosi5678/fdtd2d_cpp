@@ -10,9 +10,6 @@
 
 #include "vec1d.hpp"
 
-using namespace std;
-
-
 class set_wave:public virtual vec1d {
 
   public :

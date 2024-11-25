@@ -1,8 +1,8 @@
 # these are ignored.
+# ./ez_timestep/
+# ./hx_timestep/
+# ./hy_timestep/
 ./csv_files/
-./ez_timestep/
-./hx_timestep/
-./hy_timestep/
 ./build/
 ./pngs/
 ./mp4/

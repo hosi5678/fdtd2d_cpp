@@ -60,25 +60,39 @@ for i in range(timestep):
 
     # heatmapにもx軸を設定する。間隔はxticklabels=5で設定する。
     # vmax,vminの設定
+    df = df.reset_index()  # MultiIndex を解除
+   
+    x_values=df.index.astype(int)
+    
+    y_values=df.index.astype(int)
+    
+    # y軸の目盛り間隔とラベルを設定
+    y_tick_positions = range(0, len(y_values), 5)
+
+
     heatmap=sns.heatmap(
         data,
         xticklabels=5,
         yticklabels=5,
         cmap='coolwarm',
         cbar=True,
-        center=0.0,
-        vmax=vmax,
-        vmin=vmin
+        center=0.0
+        # vmax=vmax,
+        # vmin=vmin
     )
 
-    x_tick_positions = range(0, len(x_values), 5)
-    y_tick_positions = range(0, len(y_values), 5)
-
-    heatmap.set_xticks(x_tick_positions)
     heatmap.set_yticks(y_tick_positions)
+    heatmap.set_yticklabels(y_values[y_tick_positions], fontsize=15)
 
-    heatmap.set_xticklabels(x_values[x_tick_positions],fontsize=18)
-    heatmap.set_yticklabels(y_values[y_tick_positions],fontsize=10)
+
+    # x_tick_positions = range(0, len(x_values), 5)
+    # y_tick_positions = range(0, len(y_values), 5)
+
+    # heatmap.set_xticks(x_tick_positions)
+    # heatmap.set_yticks(y_tick_positions)
+
+    # heatmap.set_xticklabels(x_values[x_tick_positions],fontsize=18)
+    # heatmap.set_yticklabels(y_values[y_tick_positions],fontsize=10)
 
     heatmap.invert_yaxis()
 

@@ -471,7 +471,7 @@ std::vector<double> set_coef_1d::set_sinwave(int _freq_num) {
       // vec=wave.vec;
 
       // 自身を返却する
-      return _wave; 
+      return _wave;
 
 }
 

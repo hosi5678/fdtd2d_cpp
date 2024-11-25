@@ -2,7 +2,7 @@
 
 start_time=`date +%s`
 
-# clear
+clear
 
 # ./build/の削除と作成
 

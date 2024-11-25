@@ -12,11 +12,10 @@
 #include <iomanip>  // std::setw, std::setfill
 #include <sstream>  // std::stringstream
 
-class fdtd_2d:public virtual vec1d,public virtual vec2d,public virtual set_wave  {
+class fdtd_2d:public virtual vec1d,public virtual vec2d,public set_coef_2d, virtual set_wave  {
 
    public:
       int excite_mode;
-      int timestep;
 
       int xlength;
       int ylength;
@@ -65,7 +64,7 @@ class fdtd_2d:public virtual vec1d,public virtual vec2d,public virtual set_wave 
       // fdtdの計算結果のvectorを返す
       virtual std::vector<double> get_vector() const ;
 
-      virtual std::vector<std::vector<double>> invxy(std::vector<std::vector<double>> obj) const;
+      // virtual std::vector<std::vector<double>> invxy(std::vector<std::vector<double>> obj) const;
 
       // destructor
       // ~fdtd_2d()=default;
@@ -76,8 +75,6 @@ void fdtd_2d::initialize() {
 
    ylength=coef.set_ylength();
    xlength=coef.set_xlength();
-
-   timestep=coef.set_timestep();
 
    center_y=(ylength-1)/2;
    center_x=(xlength-1)/2;
@@ -109,11 +106,11 @@ void fdtd_2d::initialize() {
 
     excite_wave=wave.get_wave();
 
-   ez=coef.set_ez(ylength,xlength);
+   ez=coef.get_ez();
    
-   hx=coef.set_hx(ylength-1,xlength);
+   hx=coef.get_hx();
    
-   hy=coef.set_hx(ylength,xlength-1);
+   hy=coef.get_hy();
    
    result.vec.resize(0);
    fft_vec.vec.resize(0);
@@ -247,10 +244,12 @@ vec1d fdtd_2d::run() {
    }
 
       // ezの最大値、最小値を求める
-      for(int y=0; y<ylength; y++){
-         for (int x=0; x<xlength; x++) {
-            if(ez[y][x]>ez_max) ez_max=ez[y][x];
-            if(ez_min>ez[y][x]) ez_min=ez[y][x];
+      if (time<1200){
+         for(int y=0; y<ylength; y++){
+            for (int x=0; x<xlength; x++) {
+               if(ez[y][x]>ez_max) ez_max=ez[y][x];
+               if(ez_min>ez[y][x]) ez_min=ez[y][x];
+            }
          }
       }
 
@@ -279,7 +278,6 @@ vec1d fdtd_2d::run() {
       _file=ez;
    }
 
-   _file=ez;
    _file.createFile(20,"ez_timestep",file_name.c_str());
 
    ss.str("");
@@ -329,19 +327,19 @@ vec1d fdtd_2d::run() {
          }
       }
 
-      for (int y=0; y<ylength-1; y++) {
-         for (int x=0; x<xlength; x++){
-            if(hx[y][x]>hx_max) hx_max=hx[y][x];
-            if(hx_min>hx[y][x]) hx_min=hx[y][x];
-         }
-      }
+      // for (int y=0; y<ylength-1; y++) {
+//          for (int x=0; x<xlength; x++){
+            // if(hx[y][x]>hx_max) hx_max=hx[y][x];
+            // if(hx_min>hx[y][x]) hx_min=hx[y][x];
+         // }
+      // }
 
-      for (int y=0; y<ylength; y++) {
-         for (int x=0; x<xlength-1; x++){
-            if(hy[y][x]>hy_max) hy_max=hy[y][x];
-            if(hy_min>hy[y][x]) hy_min=hy[y][x];
-         }
-      }
+      // for (int y=0; y<ylength; y++) {
+      //    for (int x=0; x<xlength-1; x++){
+      //       if(hy[y][x]>hy_max) hy_max=hy[y][x];
+      //       if(hy_min>hy[y][x]) hy_min=hy[y][x];
+      //    }
+      // }
 
    // file_name=get_filename("hx_timestep_",time);
 // 
@@ -364,27 +362,25 @@ vec1d fdtd_2d::run() {
    // maxとminの書き込み
    vec1d ez_range,hx_range,hy_range;
 
-   ez_range.push_back(ez_max*1.1);
-   ez_range.push_back(ez_min*1.1);
+   ez_range.push_back(ez_max*1.05);
+   ez_range.push_back(ez_min*1.05);
 
    ez_range.createFile(20,"csv_files","ez_range.csv");
 
-   hx_range.push_back(hx_max*1.1);
-   hx_range.push_back(hx_min*1.1);
-
-   hx_range.createFile(20,"csv_files","hx_range.csv");
-
-   hy_range.push_back(hy_max*1.1);
-   hy_range.push_back(hy_min*1.1);
-
+   // hx_range.push_back(hx_max*1.05);
+//    hx_range.push_back(hx_min*1.05);
+// 
+   // hx_range.createFile(20,"csv_files","hx_range.csv");
+// 
+   // hy_range.push_back(hy_max*1.05);
+   // hy_range.push_back(hy_min*1.05);
+// 
    hy_range.createFile(20,"csv_files","hy_range.csv");
-
-
 
    int pop_count=0;
 
       while(fft_vec.vec.size()<fft_length){
-         fft_vec.push_front(result.vec[timestep-1-pop_count]);
+         fft_vec.push_front(result.vec[excite_wave.size()-1-pop_count]);
          pop_count++;
       }
 
@@ -408,19 +404,5 @@ std::string fdtd_2d::get_filename(const char* file_name,int _no){
    return ss.str();
 
 }      
-
-std::vector<std::vector<double>> fdtd_2d::invxy(std::vector<std::vector<double>> obj) const {
-
-   std::vector<std::vector<double>> temp(obj.at(0).size(),std::vector<double>(obj.size()));
-
-   for (size_t i=0; i<obj.at(0).size(); i++) {
-      for (size_t j=0; j<obj.size(); j++) {
-         temp[i][j]=obj[j][i];
-      }
-   }
-
-   return temp;
-}
-
 
 #endif /* F5D77CAC_A4A6_4742_AB3F_4D76C603A8DA */

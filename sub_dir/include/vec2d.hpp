@@ -1,7 +1,7 @@
 #ifndef EE24465A_0090_4BA1_8A3B_5530A95BF437
 #define EE24465A_0090_4BA1_8A3B_5530A95BF437
 
-// #include <iostream>
+#include <iostream>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -9,7 +9,9 @@
 #include <iomanip>  // fileの書き込みに使用する
 #include <string>
 #include <algorithm>
-#include <iostream>
+
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "parameter.hpp"
 
@@ -33,17 +35,21 @@ class vec2d {
       vec2d(std::vector<std::vector<double>> obj):vec2d(obj.size(),obj[0].size()){
          for(size_t j=0; j<obj.size(); j++) {
             for (size_t i=0; i<obj[0].size(); i++) {
-               vec[j][i]=obj[j][i];
+               this->vec[j][i]=obj[j][i];
             }
          }
+
+         (*this).ylength=obj.size();
+         (*this).xlength=obj[0].size();
+
       }
 
       // copy constructor
-      vec2d(const vec2d& obj){
+      vec2d(const vec2d& obj):vec(obj.vec){
 
-         if(this!=&obj){
-            this->vec=obj.vec;
-         }
+         // if(this!=&obj){
+         //    this->vec=obj.vec;
+         // }
       }
 
       // 代入演算子A=B
@@ -83,27 +89,21 @@ class vec2d {
          return obj/d;
       }
 
+      virtual vec2d& getthis(){return *this;}
+
       // x方向の差分
-      virtual vec2d diff_x(const vec2d& obj) const;
+      // virtual vec2d diff_x(const vec2d& obj) const;
 
       // y方向の差分
-      virtual vec2d diff_y(const vec2d& obj) const;
+      // virtual vec2d diff_y(const vec2d& obj) const;
 
       // xyの軸成分の反転
       virtual vec2d invxy(const vec2d& obj) const;
 
+      // invxyの
+
 
    // setter,getter
-      // 行の長さをsetする
-      void setylength(int _ylength) {
-         ylength=_ylength;
-      }
-
-      // 列の長さをsetする
-      void setxlength(int _xlength) {
-         xlength=_xlength;
-      }
-
       // 行の長さを返却する
       size_t getylength(void) {
          return vec.size();
@@ -114,27 +114,28 @@ class vec2d {
          return vec[0].size();
       }
 
+      // 2d vecの値を返却する
       double getvalue(int y, int x) const;
 
       // vectorの内容をfile出力する
-      void createFile(const int _precision,const char *file_path,const char* file_name);
+      void createFile(int precision, const std::string& dir,const std::string& filename) const;
 
       // vectorの値を出力する
       void show(const int precisition) const;
       void show() const;
 
-      vec2d getthis(){
-         return *this;
+      std::vector<std::vector<double>> getvector() const {
+         return (*this).vec;
       }
 
-      std::vector<std::vector<double>> getvector() const {
-        
-         // std::vector<std::vector<double>> temp=(*this).vec;
+      // 平面の周囲をdで囲う
+      vec2d wrap_around(double d);
 
-         return (*this).vec;
+      // y軸の中心行を削除する
+      vec2d dropcenter_y(const vec2d& obj) const ;
 
-      } 
-
+      // x軸の中心行を削除する
+      vec2d dropcenter_x(const vec2d& obj) const ;
 
 
 };  // class plane, vec2d
@@ -201,24 +202,30 @@ vec2d vec2d::operator=(const double d){
    size_t ylength=getylength();
    size_t xlength=getxlength();
 
-   // std::cout << "vec.size():" <<(*this).vec.size() << std::endl;
-   // std::cout << "vec.[0].size():" << (*this).vec[0].size() << std::endl;
-
-   // vec2d temp;
-   // (*this).vec.clear();
-   // (*this).vec.resize((*this).vec.size(),std::vector<double>((*this).vec[0].size()));
-
    for(size_t j=0; j<ylength; j++) {
       for(size_t i=0; i<xlength; i++) {
          (*this).vec[j][i]=d;
       }
    }
    return *this;
-   // return temp;
 }
 
      // 2次元の加算C=A+B
 vec2d vec2d::operator+(const vec2d& obj) {
+
+    // 入力ベクトルが空かどうかを確認
+    if (obj.vec.empty() || obj.vec[0].empty()) {
+        throw std::runtime_error("Input vector is empty or malformed.");
+    }
+
+    // 呼び出し元とobjのサイズの違いを確認
+    if (obj.vec.size()!=(*this).vec.size()) {
+      throw std::runtime_error("Input vector size(y) is different with *this.");
+    }
+
+    if (obj.vec[0].size()!=(*this).vec[0].size()) {
+      throw std::runtime_error("Input vector size(x) is different with *this.");
+    }
 
    size_t ylength=getylength();
    size_t xlength=getxlength();
@@ -231,13 +238,27 @@ vec2d vec2d::operator+(const vec2d& obj) {
       }
    }
 
-   // return *this;
    return temp;
 
 };
 
 // 2次元の要素同士の引き算C=A-B
 vec2d vec2d::operator-(const vec2d& obj) {
+
+    // 入力ベクトルが空かどうかを確認
+    if (obj.vec.empty() || obj.vec[0].empty()) {
+        throw std::runtime_error("Input vector is empty or malformed.");
+    }
+
+    // 呼び出し元とobjのサイズの違いを確認
+    if (obj.vec.size()!=(*this).vec.size()) {
+      throw std::runtime_error("Input vector size(y) is different with *this.");
+    }
+
+    if (obj.vec[0].size()!=(*this).vec[0].size()) {
+      throw std::runtime_error("Input vector size(x) is different with *this.");
+    }
+
 
    size_t ylength=getylength();
    size_t xlength=getxlength();
@@ -250,14 +271,28 @@ vec2d vec2d::operator-(const vec2d& obj) {
       }
    }
 
-   // return *this;
-
    return temp;
 }
 
 
 // 2次元の掛け算C=A*B
 vec2d vec2d::operator*(const vec2d& obj) {
+
+    // 入力ベクトルが空かどうかを確認
+    if (obj.vec.empty() || obj.vec[0].empty()) {
+        throw std::runtime_error("Input vector is empty or malformed.");
+    }
+
+    // 呼び出し元とobjのサイズの違いを確認
+    if (obj.vec.size()!=(*this).vec.size()) {
+      throw std::runtime_error("Input vector size(y) is different with *this.");
+    }
+
+    if (obj.vec[0].size()!=(*this).vec[0].size()) {
+      throw std::runtime_error("Input vector size(x) is different with *this.");
+    }
+
+
    // vec.resize(obj.vec.size(),std::vector<double>(obj.vec[0].size()));
 
    size_t ylength=getylength();
@@ -292,29 +327,21 @@ vec2d vec2d::operator*(double scalar) {
     return temp;
 }
 
-
-// vec2d vec2d::operator*(const double d) const {
-
-//    vec2d temp;
-
-//    temp.vec.resize((*this).vec.size(),std::vector<double>((*this).vec[0].size()));
-
-
-//    for (size_t j=0; j<(*this).vec.size(); j++) {
-//       for(size_t i=0; i<(*this).vec[0].size(); i++) {
-//          temp.vec[j][i]=( (*this).vec[j][i] ) *d;
-//       }
-//    }
-
-//    // return *this;
-//    return temp;
-// }
-
 // 2次元の要素同士の割り算
 vec2d vec2d::operator/(const vec2d& obj) {
-    // サイズが一致するか確認
-    if (this->vec.size() != obj.vec.size() || this->vec[0].size() != obj.vec[0].size()) {
-        throw std::invalid_argument("Dimensions of vec2d objects do not match for division.");
+
+    // 入力ベクトルが空かどうかを確認
+    if (obj.vec.empty() || obj.vec[0].empty()) {
+        throw std::runtime_error("Input vector is empty or malformed.");
+    }
+
+    // 呼び出し元とobjのサイズの違いを確認
+    if (obj.vec.size()!=(*this).vec.size()) {
+      throw std::runtime_error("Input vector size(y) is different with *this.");
+    }
+
+    if (obj.vec[0].size()!=(*this).vec[0].size()) {
+      throw std::runtime_error("Input vector size(x) is different with *this.");
     }
 
    size_t ylength=getylength();
@@ -335,74 +362,37 @@ vec2d vec2d::operator/(const vec2d& obj) {
     return temp;
 }
 
-
-// vec2d vec2d::operator/(vec2d& obj) const {
-
-//    vec2d temp;
-
-//    temp.vec.resize(obj.vec.size(),std::vector<double>(obj.vec[0].size()));
-
-//    for (size_t j=0; j<obj.vec.size(); j++) {
-//       for (size_t i=0; i< obj.vec[0].size(); i++) {
-//          temp.vec[j][i]=(*this).vec[j][i]/obj.vec[j][i];
-//       }
-//    }
-//    // return *this;
-//    return temp;
-// }
-
 // 係数による割り算
 vec2d vec2d::operator/(const double d) {
+
+   if (d==0.0) {
+      throw std::runtime_error("Division by zero in vec2d::operator/(const d)");
+   }
 
    size_t ylength=getylength();
    size_t xlength=getxlength();
 
-   vec2d temp(ylength,xlength);
-
-   vec2d obj=getthis();
-
    for (size_t j=0; j<ylength; j++) {
       for (size_t i=0; i<xlength; i++) {
-         temp.vec[j][i]=obj.vec[j][i]/d;
+         (*this).vec[j][i]=(*this).vec[j][i]/d;
       }
    }
 
-   // return *this;
-   return temp;
-}
-
-// x方向の差分
-vec2d vec2d::diff_x(const vec2d& obj) const {
-
-   vec2d temp(obj.vec.size(),obj.vec[0].size()-1);
-
-   for (size_t j=0; j<obj.vec.size(); j++) {
-      for (size_t i=0; i<obj.vec[0].size()-1; i++){
-         temp.vec[j][i]=obj.vec[j][i+1]-obj.vec[j][i];
-      }
-   }
-
-   return temp;
-
-}
-
-// y方向の差分
-vec2d vec2d::diff_y(const vec2d& obj) const {
-
-   vec2d temp(obj.vec.size()-1,obj.vec[0].size());
-
-   for (size_t j=0; j<obj.vec.size()-1; j++) {
-      for (size_t i=0; i<obj.vec[0].size(); i++){
-         temp.vec[j][i]=obj.vec[j+1][i]-obj.vec[j][i];
-      }
-   }
-
-   return temp;
-
+   return *this;
+   // return temp;
 }
 
 // xy軸成分の反転
 vec2d vec2d::invxy(const vec2d& obj) const {
+
+   if(this==&obj) {
+      throw std::runtime_error("Input vector(obj) is same with *this .");
+   }
+
+    // 入力ベクトルが空かどうかを確認
+    if (obj.vec.empty() || obj.vec[0].empty()) {
+        throw std::runtime_error("Input vector is empty or malformed.");
+    }
 
    vec2d temp(obj.vec[0].size(),obj.vec.size());
 
@@ -416,61 +406,162 @@ vec2d vec2d::invxy(const vec2d& obj) const {
 
 }
 
+vec2d vec2d::dropcenter_y(const vec2d& obj) const {
 
-void vec2d::createFile(const int _precision, const char *file_path, const char* file_name) {
+  // 中心の行の位置を求める
+    int center_y=(obj.vec.size()-1)/2;
+  
+    // 入力ベクトルが空かどうかを確認
+    if (obj.vec.empty() || obj.vec[0].empty()) {
+        throw std::runtime_error("Input vector is empty or malformed");
+    }
 
-      std::string path= std::string(file_path)+"/"+std::string(file_name);
+    // 中心行の削除を行えない場合のエラーチェック
+    if (obj.vec.size() <= 1) {
+        throw std::runtime_error("Cannot drop center row from a vector with only one row");
+    }
 
-      std::ofstream file(path);
-         if (!file.is_open()) {
-            std::cerr << path<< ": " << "を開けませんでした。" << std::endl;
-            exit(1);
-         }
+    // 中心行を除いた新しいベクトルの作成
+    vec2d temp(obj.vec.size() - 1, obj.vec[0].size());
 
-    // 受け取った精度を設定する
-    file << std::fixed << std::setprecision(_precision);
+    size_t temp_row = 0; // temp の行インデックス
 
-    // データをファイルに書き込む
-   size_t ylength=getylength(); //(*this).vec.size();
-   size_t xlength=getxlength(); //(*this).vec[0].size();
+    for (size_t j = 0; j < obj.vec.size(); j++) {
+        if ((int)j == center_y) {
+            // 中心行はスキップ
+            continue;
+        }
+        for (size_t i = 0; i < obj.vec[0].size(); i++) {
+            temp.vec[temp_row][i] = obj.vec[j][i];
+        }
+        temp_row++; // temp の次の行に進む
+    }
 
-   // std::cout << "ylength: " << ylength << std::endl;
-   // std::cout << "xlength: " << xlength << std::endl;
+    return temp;
+}
 
-   // x軸の書き込み
-   for (size_t i=0; i<xlength; i++){
-      if(i==0) file << '\t';
-      if(i!=xlength-1) file << i << ',';
-      if(i==(xlength-1)) file << i << std::endl;
+vec2d vec2d::dropcenter_x(const vec2d& obj) const {
+
+    // 入力ベクトルが空かどうかを確認
+    if (obj.vec.empty() || obj.vec[0].empty()) {
+        throw std::runtime_error("Input vector is empty or malformed");
+    }
+
+    // 中心列の削除を行えない場合のエラーチェック
+    if (obj.vec[0].size() <= 1) {
+        throw std::runtime_error("Cannot drop center column from a vector with only one column");
+    }
+
+  // 中心列の位置を求める
+    int center_x=(obj.vec[0].size()-1)/2;
+
+    // 中心列を除いた新しいベクトルの作成
+    vec2d temp(obj.vec.size(), obj.vec[0].size()-1);
+
+    for (size_t j = 0; j < obj.vec.size(); j++) {
+
+         // 削除後の列インデックス
+         // 削除後の列インデックスは毎行リセット
+         int temp_column=0;
+
+        for (size_t i = 0; i < obj.vec[0].size(); i++) {
+            
+               // 中心列をスキップ
+            if ((int)i== center_x) continue;
+
+            temp.vec[j][temp_column] = obj.vec[j][i];
+            temp_column++;
+        }
+    }
+
+   // vec2dの実体を返却する
+    return temp;
+}
+
+// directoryが無ければ作成する
+void createDirectory(const std::string& dir) {
+
+   struct stat info;
+
+   if(stat(dir.c_str(),&info)!=0) {
+      mkdir(dir.c_str(),0755);
    }
 
-   // y軸と値の書き込み
+}
 
-    for (size_t j = 0; j < ylength; j++) {
+void vec2d::createFile(const int precision, const std::string& directory, const std::string& filename) const {
+    
+    std::ofstream file(directory + "/" + filename);
 
-      file << j << ',';
+    createDirectory(directory);
 
-      for (size_t i=0; i< xlength;i++){
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file: " << directory + "/" + filename << std::endl;
+        return;
+    }
 
-         if(i!=(xlength-1)){
-            file << (*this).vec[j][i] << ',';
-         } else {
-            file << (*this).vec[j][i] << std::endl;
+   file << '\t';
 
-         }
-
+   for (size_t i=0; i<(*this).vec[0].size(); i++){
+      if(i!=(*this).vec[0].size()-1){
+         file << i << ',';
+      } else {
+         file << i << '\n';
       }
    }
 
-    // ファイルを閉じる
-   file.close();
+   for (size_t j=0; j<(*this).vec.size(); j++) {
+      file << j << ',';
+      for (size_t i=0; i<(*this).vec[0].size(); i++){
+         file << std::fixed << std::setprecision(precision) << (*this).vec[j][i] << ",";
+      }
+         file << "\n";
 
-   //  std::cout << path <<"に書き込みが完了しました。" << std::endl;
+   }
 
+   //  for (const auto& row : vec) {
+   //      for (const auto& val : row) {
+   //          file << std::fixed << std::setprecision(precision) << val << ",";
+   //      }
+   //      file << "\n";
+   //  }
+
+   //  std::cout << "file written successfully: " << directory + "/" + filename << std::endl;
 }
+
 
 double vec2d::getvalue(int y, int x) const {
    return (*this).vec[y][x];
 }
 
+vec2d vec2d::wrap_around(double d) {
+
+   vec2d temp((*this).vec.size()+2, (*this).vec[0].size()+2);
+
+// temp を d で初期化
+   // for (size_t j = 0; j < temp.vec.size(); j++) {
+   //     for (size_t i = 0; i < temp.vec[0].size(); i++) {
+   //         temp.vec[j][i] = d;
+   //     }
+   // }
+
+   temp=d;
+
+   for (size_t j=1; j<temp.vec.size()-1; j++) {
+      for (size_t i=1; i<temp.vec[0].size()-1; i++) {
+         temp.vec[j][i]=(*this).vec[j-1][i-1];
+      }
+   }
+
+   return temp;
+
+}
+
+/*
+gdb ./build/main
+(gdb) break vec2d::invxy
+(gdb) run
+(gdb) print other
+(gdb) print *this
+*/
 #endif /* EE24465A_0090_4BA1_8A3B_5530A95BF437 */
