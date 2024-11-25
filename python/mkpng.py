@@ -9,6 +9,10 @@ import matplotlib.ticker as ticker
 from count_csv_files import count_csv_files
 from shell_command import shell_command
 
+# 前処理
+command="rm ./pngs/*.png"
+shell_command(command)
+
 # 最大値、最小値のファイルを開く
 ey_range_file="./csv_files/ez_range.csv"
 df=pd.read_csv(ey_range_file,header=None)
@@ -20,6 +24,9 @@ print("ez_min="+str(df.iloc[1].min()))
 # 最大値、最小値の取得
 vmax=df.iloc[0].max()
 vmin=df.iloc[1].min()
+
+vmax=1.0e-7
+vmin=-1.0e-7
 
 # csv filesのフォルダパス
 csv_dir="./ez_timestep/"
@@ -76,9 +83,9 @@ for i in range(timestep):
         yticklabels=5,
         cmap='coolwarm',
         cbar=True,
-        center=0.0
-        # vmax=vmax,
-        # vmin=vmin
+        center=0.0,
+        vmax=vmax,
+        vmin=vmin
     )
 
     heatmap.set_yticks(y_tick_positions)

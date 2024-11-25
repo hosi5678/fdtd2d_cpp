@@ -101,7 +101,7 @@ vec2d set_sigma_2d::set_sigma_hx() {
   }
 
 
-  for (int i=0; i<pml_layer_halfside-1; i++) {
+  for (int i=0; i<pml_layer_halfside; i++) {
     temp=temp.wrap_around(sigma_half_dx[sigma_half_dx.size()-1-i]);
   }
 
@@ -153,7 +153,13 @@ std::vector<double> set_sigma_2d::set_sigma_half_dx() {
 
       i++;
 
-   } while (i<pml_layer_halfside-1);
+   } while (i<pml_layer_halfside);
+
+  // vec1d _temp;
+
+  // _temp=sigma_half_dx;
+
+  // _temp.show(20);
 
    return sigma_half_dx;
 

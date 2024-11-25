@@ -427,6 +427,7 @@ vec2d vec2d::dropcenter_y(const vec2d& obj) const {
     size_t temp_row = 0; // temp の行インデックス
 
     for (size_t j = 0; j < obj.vec.size(); j++) {
+
         if ((int)j == center_y) {
             // 中心行はスキップ
             continue;
@@ -460,7 +461,6 @@ vec2d vec2d::dropcenter_x(const vec2d& obj) const {
 
     for (size_t j = 0; j < obj.vec.size(); j++) {
 
-         // 削除後の列インデックス
          // 削除後の列インデックスは毎行リセット
          int temp_column=0;
 

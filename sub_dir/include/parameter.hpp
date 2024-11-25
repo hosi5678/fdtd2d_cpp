@@ -10,8 +10,8 @@
 
 enum excitation_mode {gaussian_pulse,sinwave};
 
-#define gaussianPeaktimePosition 32
-#define time_padding 30
+#define gaussianPeaktimePosition 64
+#define time_padding 50
 
 #define gaussian_alpha 0.05
 #define pulseAmplitude 1.0
@@ -23,9 +23,9 @@ enum excitation_mode {gaussian_pulse,sinwave};
 #define fft_length 16384
 #define peak_limit 15
 
-#define pml_layer_halfside 0
-#define air_halfside 25
-#define refractive_halfside 0
+#define pml_layer_halfside 50
+#define air_halfside 10
+#define refractive_halfside 25
 
 #define cu_sigma 64.5e6 // [S/m]
 

@@ -205,11 +205,11 @@ vec1d fdtd_2d::run() {
    double ez_max=0.0;
    double ez_min=0.0;
 
-   double hx_max=0.0;
-   double hx_min=0.0;
+   // double hx_max=0.0;
+   // double hx_min=0.0;
 
-   double hy_max=0.0;
-   double hy_min=0.0;
+   // double hy_max=0.0;
+   // double hy_min=0.0;
 
 // fdtd 2d time-loop
    for (size_t time=0;time<excite_wave.size();time++){

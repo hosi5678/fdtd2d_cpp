@@ -134,7 +134,7 @@ void set_coef_2d::initialize() {
 
 
    coef1_ez=set_coef1_ez_2d(eps_ez, sigma_ez);
-   coef2_ez=set_coef2_ez_2d(eps_hy,sigma_hy); // hy
+   coef2_ez=set_coef2_ez_2d(eps_ez,sigma_ez); // hy
 
    coef3_ez=invxy(coef2_ez); // hx
    
@@ -231,18 +231,23 @@ std::vector<std::vector<double>> set_coef_2d::set_coef2_ez_2d(const vec2d& eps,c
    if (eps.vec[0].size()!=sigma.vec[0].size()){
       std::cout << "eps x:" << eps.vec[0].size() << std::endl;
       std::cout << "sigma x:" << sigma.vec[0].size() << std::endl;
+
       throw std::runtime_error("(coef2_ez) Input vector size (y) is different.");
 
    }
 
+   vec2d eps_temp,sigma_temp;
 
-   vec2d temp(eps.vec.size(),eps.vec[0].size());
+   eps_temp=dropcenter_x(eps);
+   sigma_temp=dropcenter_x(sigma);
+
+   vec2d temp(eps_temp.vec.size(),eps_temp.vec[0].size());
 
    double top=2.0*dt;
 
-   for (size_t j=0; j<eps.vec.size(); j++ ) {
-      for (size_t i=0; i<eps.vec[0].size(); i++) {
-         double bottom=(2.0*eps_hy.vec[j][i]+dt*sigma_ez.vec[j][i])*dx;
+   for (size_t j=0; j<eps_temp.vec.size(); j++ ) {
+      for (size_t i=0; i<eps_temp.vec[0].size(); i++) {
+         double bottom=(2.0*eps_temp.vec[j][i]+dt*sigma_temp.vec[j][i])*dx;
          temp.vec[j][i]=top/bottom;
       }
    }
