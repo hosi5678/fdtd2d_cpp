@@ -10,7 +10,7 @@
 
 enum excitation_mode {gaussian_pulse,sinwave};
 
-#define gaussianPeaktimePosition 64
+#define gaussianPeaktimePosition 32
 #define time_padding 50
 
 #define gaussian_alpha 0.05

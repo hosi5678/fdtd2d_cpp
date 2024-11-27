@@ -353,15 +353,16 @@ vec1d vec1d::merge(const vec1d& obj) const {
 // vectorの反転を返す
 vec1d vec1d::invert(const vec1d& obj) const {
 
-   vec1d result(static_cast<double>(0));
+   if(obj.vec.empty()){
+      throw std::runtime_error("in invert, obj is empty.");
+   }
 
-   for(size_t i=0; i<vec.size(); i++){
+   vec1d result(static_cast<int>(0));
+
+   for(size_t i=0; i<obj.vec.size(); i++){
       result.vec.push_back(obj.vec[obj.vec.size()-1-i]);
    }
 
-   // vec=result.vec;
-
-   // return *this;
    return result;
 
 }

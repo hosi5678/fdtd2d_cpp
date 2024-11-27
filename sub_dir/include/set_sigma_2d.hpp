@@ -23,8 +23,8 @@ class set_sigma_2d : public virtual vec1d, public virtual vec2d  {
 
     double sigma_func(double d);
 
-    vec2d set_sigma_ez();
-    vec2d set_sigma_hx();
+    vec2d set_sigma_ez(std::vector<double>);
+    vec2d set_sigma_hx(std::vector<double>);
 
     std::vector<double> set_sigma_dx();
     std::vector<double> set_sigma_half_dx();
@@ -54,18 +54,15 @@ void set_sigma_2d::initialise(){
 
   sigma_half_dx=set_sigma_half_dx();
 
-  sigma_ez=set_sigma_ez();
+  sigma_ez=set_sigma_ez(sigma_dx);
 
-  // vec2d _temp=sigma_ez;
-  // _temp.createFile(20,"csv_files","sigma_ez.csv");
-
-  sigma_hx=set_sigma_hx();
+  sigma_hx=set_sigma_hx(sigma_half_dx);
 
   sigma_hy=invxy(sigma_hx);
 
 }
 
-vec2d set_sigma_2d::set_sigma_ez() {
+vec2d set_sigma_2d::set_sigma_ez(std::vector<double> sigma_dx) {
 
   vec2d temp(1,1);
   temp=0.0;
@@ -78,16 +75,15 @@ vec2d set_sigma_2d::set_sigma_ez() {
     temp=temp.wrap_around(0.0);
   }
 
-
   for (int i=0; i<pml_layer_halfside; i++) {
-    temp=temp.wrap_around(sigma_dx[sigma_dx.size()-1-i]);
+    temp=temp.wrap_around(sigma_dx[i]);
   }
 
   return temp;
 
 }
 
-vec2d set_sigma_2d::set_sigma_hx() {
+vec2d set_sigma_2d::set_sigma_hx(std::vector<double> sigma_half_dx) {
 
   vec2d temp(1,1);
   temp=0.0;
@@ -102,7 +98,7 @@ vec2d set_sigma_2d::set_sigma_hx() {
 
 
   for (int i=0; i<pml_layer_halfside; i++) {
-    temp=temp.wrap_around(sigma_half_dx[sigma_half_dx.size()-1-i]);
+    temp=temp.wrap_around(sigma_half_dx[i]);
   }
 
   temp=dropcenter_y(temp);
@@ -134,7 +130,11 @@ std::vector<double> set_sigma_2d::set_sigma_dx() {
       
    } while (i<pml_layer_halfside);
 
-   return sigma_dx;
+     vec1d _temp=sigma_dx;
+
+   vec1d temp=invert(_temp);
+
+   return temp.vec;
 
 }
 
@@ -155,13 +155,9 @@ std::vector<double> set_sigma_2d::set_sigma_half_dx() {
 
    } while (i<pml_layer_halfside);
 
-  // vec1d _temp;
+  vec1d _temp=invert(sigma_half_dx);
 
-  // _temp=sigma_half_dx;
-
-  // _temp.show(20);
-
-   return sigma_half_dx;
+   return _temp.vec;
 
 }
 

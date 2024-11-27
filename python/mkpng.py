@@ -5,6 +5,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import matplotlib.patches as patches
 
 from count_csv_files import count_csv_files
 from shell_command import shell_command
@@ -12,6 +13,18 @@ from shell_command import shell_command
 # 前処理
 command="rm ./pngs/*.png"
 shell_command(command)
+
+center_point_file="./csv_files/point.csv"
+df=pd.read_csv(center_point_file,header=None)
+
+center_y=df.iloc[0]
+half_y=df.iloc[1]
+
+center_x=center_y
+half_x=half_y
+
+rect_y=center_y-half_y
+rect_x=center_x-half_x
 
 # 最大値、最小値のファイルを開く
 ey_range_file="./csv_files/ez_range.csv"
@@ -75,7 +88,7 @@ for i in range(timestep):
     
     # y軸の目盛り間隔とラベルを設定
     y_tick_positions = range(0, len(y_values), 5)
-
+    x_tick_positions = range(0, len(x_values), 5)
 
     heatmap=sns.heatmap(
         data,
@@ -91,21 +104,20 @@ for i in range(timestep):
     heatmap.set_yticks(y_tick_positions)
     heatmap.set_yticklabels(y_values[y_tick_positions], fontsize=15)
 
+    heatmap.set_xticks(x_tick_positions)
+    heatmap.set_xticklabels(x_values[x_tick_positions], fontsize=15)
 
-    # x_tick_positions = range(0, len(x_values), 5)
-    # y_tick_positions = range(0, len(y_values), 5)
+    rect=patches.Rectangle((float(rect_x.iloc[0]),float(rect_y.iloc[0])),float(2*half_x.iloc[0]),float(2*half_x.iloc[0]),
+    edgecolor="black",facecolor="none",linewidth=2)
 
-    # heatmap.set_xticks(x_tick_positions)
-    # heatmap.set_yticks(y_tick_positions)
+    # print(type(rect))
 
-    # heatmap.set_xticklabels(x_values[x_tick_positions],fontsize=18)
-    # heatmap.set_yticklabels(y_values[y_tick_positions],fontsize=10)
+    heatmap.add_patch(rect)
 
     heatmap.invert_yaxis()
 
-    heatmap.set_xlabel('x position' , {"fontsize":25})
-    
-    heatmap.set_ylabel('y position' ,{"fontsize":25} )
+    heatmap.set_xlabel('x position' , {"fontsize":20} )
+    heatmap.set_ylabel('y position' , {"fontsize":20} )
     
     plt.suptitle("timestep="+str(i),fontsize=25)
     

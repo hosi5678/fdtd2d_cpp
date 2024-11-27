@@ -137,6 +137,9 @@ class vec2d {
       // x軸の中心行を削除する
       vec2d dropcenter_x(const vec2d& obj) const ;
 
+      // 2次元のcsvファイル(軸ラベルあり)を読み込む 引数:string& 返り値:vec2d
+      vec2d readCSV(const std::string& filename) const;
+
 
 };  // class plane, vec2d
 
@@ -555,7 +558,71 @@ vec2d vec2d::wrap_around(double d) {
 
    return temp;
 
+}      
+// 2次元のcsvファイル(軸ラベルあり)を読み込む 引数:string& 返り値:vec2d
+vec2d vec2d::readCSV(const std::string& filename) const{
+      
+   std::ifstream file(filename);
+
+      if (!file.is_open()) {
+         throw std::runtime_error("ファイルを開けませんでした: " + filename);
+      }
+
+      vec2d result;
+
+      std::vector<std::vector<double>> csv_data;
+
+      std::vector<int> y_labels;
+      std::vector<int> x_labels;
+
+      std::string line;
+      bool is_first_line = true;
+
+      while (std::getline(file, line)) {
+
+        std::stringstream ss(line);
+        std::string cell;
+
+        if (is_first_line) {
+            // 1行目の処理
+            is_first_line = false;
+
+            // 最初のタブ文字をスキップ
+            std::getline(ss, cell, '\t');
+
+            // x_labels を取得
+            while (std::getline(ss, cell, ',')) {
+                x_labels.push_back(std::stoi(cell));
+            }
+
+        } else {
+            // 2行目以降の処理
+            std::vector<double> row_data;
+
+            // 1列目 (y_labels) を取得
+            std::getline(ss, cell, ',');
+            
+            y_labels.push_back(std::stoi(cell));
+
+            // 残りのデータを取得
+            while (std::getline(ss, cell, ',')) {
+                row_data.push_back(std::stod(cell));
+            }
+
+            // csvデータを2次元vectorにpushする。
+            csv_data.push_back(row_data);
+        }
+    }
+
+   // fileを閉じる
+    file.close();
+
+   // vec2dにしてresultを返却する
+   result=csv_data;
+
+   return result;
 }
+
 
 /*
 gdb ./build/main

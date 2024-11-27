@@ -255,11 +255,17 @@ vec1d fdtd_2d::run() {
 
    result.push_back(ez[center_y][center_x]);
 
+   vec2d _file;
+
    std::stringstream ss;
 
    std::string file_name=get_filename("ez_timestep_",time);
 
-   vec2d _file;
+   vec1d _point;
+   _point.vec.push_back(refractive_halfside+air_halfside);
+   _point.vec.push_back(refractive_halfside);
+
+   _point.createFile(0,"csv_files","point.csv");
 
 
    if (pml_layer_halfside>0) {

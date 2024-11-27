@@ -46,3 +46,10 @@ int main(void){
     return 0;
 
 }
+
+/*
+    // csvファイルの読み込み
+    vec2d _file,temp;
+    temp=_file.readCSV("./data.csv");
+    temp.show(20);
+*/
