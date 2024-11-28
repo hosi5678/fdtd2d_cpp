@@ -17,15 +17,15 @@ enum excitation_mode {gaussian_pulse,sinwave};
 #define pulseAmplitude 1.0
 #define freq_num 15
 
-#define sin_wave_f_no 17
+#define sin_wave_f_no 173
 #define sin_wave_timestep 1200
 
-#define fft_length 128
+#define fft_length 16384
 #define peak_limit 15
 
-#define pml_layer_halfside 5
-#define air_halfside 5
-#define refractive_halfside 5
+#define pml_layer_halfside 50
+#define air_halfside 10
+#define refractive_halfside 25
 
 #define cu_sigma 64.5e6 // [S/m]
 

@@ -120,7 +120,7 @@ void fdtd_2d::initialize() {
 vec1d fdtd_2d::run() {
 
    std::cout << "in 2d main loop." << std::endl;
-   std::cout << "timestep=" << timestep<< std::endl;
+   std::cout << "timestep=" << excite_wave.size() << std::endl;
 
    std::cout << "ylength=" << ylength << std::endl;
    std::cout << "xlength=" << xlength << std::endl;

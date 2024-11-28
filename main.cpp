@@ -16,8 +16,8 @@ using namespace std;
 int main(void){
 
 // 励起波形の選択とsin波形の角周波数の選択
-    int excite_mode=gaussian_pulse;
-// int excite_mode=sinwave;
+    // int excite_mode=gaussian_pulse;
+int excite_mode=sinwave;
 
     fdtd_2d fdtd(excite_mode);
 

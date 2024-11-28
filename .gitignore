@@ -22,6 +22,7 @@
 *.so
 .ninja_deps
 .ninja_log
+gaussian_fft_peak_number
 main
 
 !CMakeLists.txt
