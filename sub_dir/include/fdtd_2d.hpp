@@ -128,6 +128,8 @@ vec1d fdtd_2d::run() {
    std::cout << "center_y: " << center_y << std::endl;
    std::cout << "center_x: " << center_x << std::endl;
 
+   std::cout << "pml layer: " << pml_layer_halfside << std::endl;
+
    vec2d temp;
 
    temp=ez;

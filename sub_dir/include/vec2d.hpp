@@ -15,6 +15,11 @@
 
 #include "parameter.hpp"
 
+/*
+   =のときは*thisを使う
+   その他のoperatorのときはtempを使う
+*/
+
 class vec2d {
 
    protected:
@@ -46,10 +51,6 @@ class vec2d {
 
       // copy constructor
       vec2d(const vec2d& obj):vec(obj.vec){
-
-         // if(this!=&obj){
-         //    this->vec=obj.vec;
-         // }
       }
 
       // 代入演算子A=B
@@ -100,8 +101,6 @@ class vec2d {
       // xyの軸成分の反転
       virtual vec2d invxy(const vec2d& obj) const;
 
-      // invxyの
-
 
    // setter,getter
       // 行の長さを返却する
@@ -141,12 +140,7 @@ class vec2d {
       vec2d readCSV(const std::string& filename) const;
 
 
-};  // class plane, vec2d
-
-/*
-   =のときは*thisを使う
-   その他のoperatorのときはtempを使う
-*/
+};  // class vec2d
 
 // vector2dの内容を出力する
 void vec2d::show() const {
@@ -173,6 +167,7 @@ void vec2d::show(const int precision) const {
 // 代入演算子 A = B
 vec2d& vec2d::operator=(const vec2d& obj) {
 
+   // 自己代入を防ぐ
    if (this != &obj) {
       this->vec=obj.vec;
    }
@@ -183,9 +178,14 @@ vec2d& vec2d::operator=(const vec2d& obj) {
 // vectorの代入 (A=vector) (実体を渡す)
 vec2d& vec2d::operator=(const std::vector<std::vector<double>> obj) {
 
+   // もしobjの内容が空ならエラーを出す
+   if(obj.empty()){
+      throw runtime_error("in operator, obj is empty.");
+   }
+
+   // 引数objのサイズに*thisのサイズをresizeする
    this->vec.resize(obj.size(),std::vector<double>(obj[0].size()));
 
-   // vec2d temp=obj; 
 
    if((this)->vec!=obj) {
       if (obj.empty()) {
@@ -274,6 +274,7 @@ vec2d vec2d::operator-(const vec2d& obj) {
       }
    }
 
+   // 実体を返す
    return temp;
 }
 
@@ -294,9 +295,6 @@ vec2d vec2d::operator*(const vec2d& obj) {
     if (obj.vec[0].size()!=(*this).vec[0].size()) {
       throw std::runtime_error("Input vector size(x) is different with *this.");
     }
-
-
-   // vec.resize(obj.vec.size(),std::vector<double>(obj.vec[0].size()));
 
    size_t ylength=getylength();
    size_t xlength=getxlength();
@@ -347,17 +345,19 @@ vec2d vec2d::operator/(const vec2d& obj) {
       throw std::runtime_error("Input vector size(x) is different with *this.");
     }
 
-   size_t ylength=getylength();
-   size_t xlength=getxlength();
+   // size_t ylength=getylength();
+   // size_t xlength=getxlength();
 
-   vec2d temp(ylength,xlength);
+   vec2d temp(obj.vec.size(),obj.vec[0].size());
 
+    for (size_t j = 0; j < obj.vec.size(); j++) {
+        for (size_t i = 0; i < obj.vec[0].size(); i++) {
 
-    for (size_t j = 0; j < ylength; j++) {
-        for (size_t i = 0; i < xlength; i++) {
+            // もし引数objが0ならerrorを出す。
             if (obj.vec[j][i] == 0) {
                 throw std::runtime_error("Division by zero in vec2d::operator/.");
             }
+            // 除算する
             temp.vec[j][i] = this->vec[j][i] / obj.vec[j][i];
         }
     }
@@ -382,7 +382,7 @@ vec2d vec2d::operator/(const double d) {
    }
 
    return *this;
-   // return temp;
+
 }
 
 // xy軸成分の反転
@@ -397,6 +397,7 @@ vec2d vec2d::invxy(const vec2d& obj) const {
         throw std::runtime_error("Input vector is empty or malformed.");
     }
 
+   // objectの作成
    vec2d temp(obj.vec[0].size(),obj.vec.size());
 
    for (size_t j=0; j<obj.vec.size(); j++) {
@@ -405,15 +406,13 @@ vec2d vec2d::invxy(const vec2d& obj) const {
       }
    }
 
+   // objectの返却
    return temp;
 
 }
 
 vec2d vec2d::dropcenter_y(const vec2d& obj) const {
 
-  // 中心の行の位置を求める
-    int center_y=(obj.vec.size()-1)/2;
-  
     // 入力ベクトルが空かどうかを確認
     if (obj.vec.empty() || obj.vec[0].empty()) {
         throw std::runtime_error("Input vector is empty or malformed");
@@ -423,6 +422,10 @@ vec2d vec2d::dropcenter_y(const vec2d& obj) const {
     if (obj.vec.size() <= 1) {
         throw std::runtime_error("Cannot drop center row from a vector with only one row");
     }
+
+   // 中心の行の位置を求める
+    int center_y=(obj.vec.size()-1)/2;
+
 
     // 中心行を除いた新しいベクトルの作成
     vec2d temp(obj.vec.size() - 1, obj.vec[0].size());
@@ -486,6 +489,7 @@ void createDirectory(const std::string& dir) {
 
    struct stat info;
 
+   // もしdirectoryが空なら新規作成する
    if(stat(dir.c_str(),&info)!=0) {
       mkdir(dir.c_str(),0755);
    }
@@ -493,16 +497,19 @@ void createDirectory(const std::string& dir) {
 }
 
 void vec2d::createFile(const int precision, const std::string& directory, const std::string& filename) const {
-    
-    std::ofstream file(directory + "/" + filename);
 
+   // もしdirectoryがなければ新規作成する
     createDirectory(directory);
 
+    std::ofstream file(directory + "/" + filename);
+
+   // もしファイルが開けなかったらエラーを表示する
     if (!file.is_open()) {
         std::cerr << "Failed to open file: " << directory + "/" + filename << std::endl;
         return;
     }
 
+   // 1行1列目はタブを書き込む
    file << '\t';
 
    for (size_t i=0; i<(*this).vec[0].size(); i++){
@@ -541,13 +548,7 @@ vec2d vec2d::wrap_around(double d) {
 
    vec2d temp((*this).vec.size()+2, (*this).vec[0].size()+2);
 
-// temp を d で初期化
-   // for (size_t j = 0; j < temp.vec.size(); j++) {
-   //     for (size_t i = 0; i < temp.vec[0].size(); i++) {
-   //         temp.vec[j][i] = d;
-   //     }
-   // }
-
+   // temp を d で初期化
    temp=d;
 
    for (size_t j=1; j<temp.vec.size()-1; j++) {
@@ -556,6 +557,7 @@ vec2d vec2d::wrap_around(double d) {
       }
    }
 
+   // objectの返却
    return temp;
 
 }      
@@ -564,6 +566,7 @@ vec2d vec2d::readCSV(const std::string& filename) const{
       
    std::ifstream file(filename);
 
+      // もしファイルが開けなかったらエラーを出す。
       if (!file.is_open()) {
          throw std::runtime_error("ファイルを開けませんでした: " + filename);
       }
@@ -600,6 +603,7 @@ vec2d vec2d::readCSV(const std::string& filename) const{
             std::vector<double> row_data;
 
             // 1列目 (y_labels) を取得
+            // カンマは読み飛ばす
             std::getline(ss, cell, ',');
             
             y_labels.push_back(std::stoi(cell));
